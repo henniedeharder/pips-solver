@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pips Board Builder</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="hero">
+        <p class="kicker">Pips Solver</p>
+        <h1>Board Builder</h1>
+        <p class="subtitle">Select squares, then reveal only the active pips.</p>
+      </header>
+
+      <section class="controls" aria-label="Board controls">
+        <label>
+          Rows
+          <input id="rowsInput" type="number" min="2" max="30" value="10" />
+        </label>
+        <label>
+          Columns
+          <input id="colsInput" type="number" min="2" max="30" value="10" />
+        </label>
+        <button id="rebuildBtn" type="button">Rebuild Grid</button>
+        <button id="toggleRevealBtn" type="button">Show Selected Board</button>
+        <button id="readyBtn" type="button">Ready to play!</button>
+        <button id="clearBtn" type="button" class="ghost">Clear Selection</button>
+      </section>
+
+      <section class="controls" aria-label="Area controls">
+        <p class="section-title">Create Area Rules (in selected board view)</p>
+        <button id="allEqualBtn" type="button" class="rule-btn" data-rule="all-equal">=</button>
+        <button id="allUnequalBtn" type="button" class="rule-btn" data-rule="all-unequal">!=</button>
+        <button id="greaterThanBtn" type="button" class="rule-btn" data-rule="greater-than">&gt;</button>
+        <button id="lessThanBtn" type="button" class="rule-btn" data-rule="less-than">&lt;</button>
+        <button id="sumEqualBtn" type="button" class="rule-btn" data-rule="sum-equals">+</button>
+      </section>
+
+      <section class="board-panel">
+        <div class="play-controls play-only">
+          <button id="solveBtn" type="button">Solve Puzzle</button>
+          <button id="playBackBtn" type="button" class="ghost">Back to Builder</button>
+          <p id="solveStatus" class="hint"></p>
+        </div>
+        <div id="board" class="board" role="grid" aria-label="Pips board"></div>
+        <p id="boardHint" class="hint"></p>
+        <div id="areasList" class="areas-list" aria-live="polite"></div>
+      </section>
+
+      <section class="board-panel domino-panel">
+        <h2>Domino Selection (0-0 to 6-6)</h2>
+        <p class="hint">Click dominoes to include or exclude them from the game.</p>
+        <div id="dominoes" class="dominoes" aria-label="Domino palette"></div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

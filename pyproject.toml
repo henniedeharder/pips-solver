@@ -1,14 +1,20 @@
 [project]
 name = "pips-solver"
 version = "0.1.0"
-description = ""
+description = "A solver for dominoes pips puzzles with area constraints"
 authors = [
     {name = "Hennie",email = "hennie.de.harder@ingka.ikea.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+  "flask>=3.0.0",
 ]
+
+[project.scripts]
+pips-solve = "pips_solver.cli:main"
+pips-server = "pips_solver.server:run"
+pips-solve-samples = "pips_solver.sample_runner:main"
 
 [tool.poetry]
 packages = [{include = "pips_solver", from = "src"}]
