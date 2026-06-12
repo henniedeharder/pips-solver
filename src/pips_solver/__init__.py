@@ -1,5 +1,5 @@
 """Pips Solver - Dominoes puzzle solver."""
 
-from .solver import PipsSolver, solve_from_json
+from .pips_solver import DominoSuperSolver
 
-__all__ = ["PipsSolver", "solve_from_json"]
+__all__ = ["DominoSuperSolver"]

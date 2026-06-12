@@ -9,8 +9,7 @@
   <body>
     <main class="app-shell">
       <header class="hero">
-        <p class="kicker">Pips Solver</p>
-        <h1>Board Builder</h1>
+        <h1>Pips Solver</h1>
         <p class="subtitle">Select squares, then reveal only the active pips.</p>
       </header>
 
@@ -40,7 +39,10 @@
 
       <section class="board-panel">
         <div class="play-controls play-only">
-          <button id="solveBtn" type="button">Solve Puzzle</button>
+          <button id="hintBtn" type="button">Hint</button>
+          <button id="solutionBtn" type="button">Solution</button>
+          <button id="processBtn" type="button">Show Solution Process</button>
+          <button id="statsBtn" type="button">Show Search Stats</button>
           <button id="playBackBtn" type="button" class="ghost">Back to Builder</button>
           <p id="solveStatus" class="hint"></p>
         </div>

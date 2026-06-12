@@ -7,7 +7,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from pathlib import Path
 import json
 import time
-from .solver import PipsSolver
+from .pips_solver import DominoSuperSolver
 
 app = Flask(__name__, static_folder=None)
 
@@ -39,20 +39,25 @@ def solve():
         if not board:
             return jsonify({"error": "No board provided"}), 400
 
-        solver = PipsSolver(board)
-        solution = solver.solve()
+        solver = DominoSuperSolver(board)
+        solved = solver.solve()
 
-        if solution:
+        if solved:
             # Convert solution to serializable format
-            solution_data = {str(k): v for k, v in solution.items()}
+            solution_data = solver.get_solution_dict()
             return jsonify({
                 "status": "solved",
                 "solution": solution_data,
-                "grid": solver.get_solution_grid(),
+                "grid": solver.solution_board,
+                "solution_steps": solver.solution_steps,
+                "search_stats": solver.get_search_stats(),
+                "tested_dominoes_order": solver.get_tested_dominoes_order(),
             })
         else:
             return jsonify({
                 "status": "no_solution",
+                "search_stats": solver.get_search_stats(),
+                "tested_dominoes_order": solver.get_tested_dominoes_order(),
             })
     except Exception as e:
         return jsonify({

@@ -6,6 +6,10 @@ const toggleRevealBtn = document.getElementById("toggleRevealBtn");
 const readyBtn = document.getElementById("readyBtn");
 const playBackBtn = document.getElementById("playBackBtn");
 const clearBtn = document.getElementById("clearBtn");
+const hintBtn = document.getElementById("hintBtn");
+const solutionBtn = document.getElementById("solutionBtn");
+const processBtn = document.getElementById("processBtn");
+const statsBtn = document.getElementById("statsBtn");
 const boardHintEl = document.getElementById("boardHint");
 const areasListEl = document.getElementById("areasList");
 const ruleButtons = Array.from(document.querySelectorAll(".rule-btn"));
@@ -36,12 +40,13 @@ const state = {
   cellArea: new Map(),
   nextAreaId: 1,
   selectedDominoes: new Set(),
+  solveData: null,
+  hintedSteps: 0,
+  processTimer: null,
+  processRunId: 0,
 };
 
 const solveStatus = document.getElementById("solveStatus");
-const solveBtn = document.getElementById("solveBtn");
-
-let solution = null;
 
 const cellEls = new Map();
 
@@ -173,6 +178,230 @@ function updateBoardModeUi() {
   }
 
   document.querySelector(".app-shell").classList.toggle("ready-mode", state.ready);
+}
+
+function clearBoardLabels() {
+  cellEls.forEach((cell) => {
+    cell.textContent = "";
+    cell.classList.remove("wrong-attempt");
+  });
+}
+
+function stopProcessPlayback() {
+  state.processRunId += 1;
+  if (state.processTimer) {
+    window.clearTimeout(state.processTimer);
+    state.processTimer = null;
+  }
+}
+
+function setPlayButtonsDisabled(disabled) {
+  hintBtn.disabled = disabled;
+  solutionBtn.disabled = disabled;
+  processBtn.disabled = disabled;
+  statsBtn.disabled = disabled;
+}
+
+function getSolveSteps() {
+  if (!state.solveData || !Array.isArray(state.solveData.solution_steps)) {
+    return [];
+  }
+  return state.solveData.solution_steps;
+}
+
+function getProcessAttempts() {
+  if (!state.solveData || !Array.isArray(state.solveData.tested_dominoes_order)) {
+    return [];
+  }
+
+  // Keep process playback readable: show actual placed candidates (accepted), including wrong ones later removed.
+  return state.solveData.tested_dominoes_order.filter((attempt) => attempt.accepted === true);
+}
+
+function placementSignature(cellA, cellB, valueA, valueB) {
+  const [r1, c1] = cellA;
+  const [r2, c2] = cellB;
+  const firstIsA = r1 < r2 || (r1 === r2 && c1 <= c2);
+  if (firstIsA) {
+    return `${r1}:${c1}:${valueA}|${r2}:${c2}:${valueB}`;
+  }
+  return `${r2}:${c2}:${valueB}|${r1}:${c1}:${valueA}`;
+}
+
+function getFinalPlacementSet() {
+  const set = new Set();
+  const steps = getSolveSteps();
+  steps.forEach((step) => {
+    const [v1, v2] = step.values;
+    set.add(placementSignature(step.cell, step.neighbor, v1, v2));
+  });
+  return set;
+}
+
+function renderFixedValueMap(fixedValues) {
+  clearBoardLabels();
+  boardEl.classList.add("solved");
+  fixedValues.forEach((value, key) => {
+    const cell = cellEls.get(key);
+    if (cell) {
+      cell.textContent = String(value);
+    }
+  });
+}
+
+function paintAttempt(attempt, wrong) {
+  const [r1, c1] = attempt.cell;
+  const [r2, c2] = attempt.neighbor;
+  const [v1, v2] = attempt.values;
+  const key1 = keyFor(r1, c1);
+  const key2 = keyFor(r2, c2);
+  const cell1 = cellEls.get(key1);
+  const cell2 = cellEls.get(key2);
+
+  if (cell1) {
+    cell1.textContent = String(v1);
+    cell1.classList.toggle("wrong-attempt", wrong);
+  }
+  if (cell2) {
+    cell2.textContent = String(v2);
+    cell2.classList.toggle("wrong-attempt", wrong);
+  }
+}
+
+function renderSolvedSteps(stepCount) {
+  clearBoardLabels();
+  const steps = getSolveSteps();
+  const revealCount = clamp(stepCount, 0, steps.length);
+  if (revealCount < 1) {
+    return;
+  }
+
+  boardEl.classList.add("solved");
+  for (let i = 0; i < revealCount; i += 1) {
+    const step = steps[i];
+    const [r1, c1] = step.cell;
+    const [r2, c2] = step.neighbor;
+    const [v1, v2] = step.values;
+    const key1 = keyFor(r1, c1);
+    const key2 = keyFor(r2, c2);
+    const cell1 = cellEls.get(key1);
+    const cell2 = cellEls.get(key2);
+    if (cell1) {
+      cell1.textContent = String(v1);
+    }
+    if (cell2) {
+      cell2.textContent = String(v2);
+    }
+  }
+}
+
+function showSearchStats() {
+  if (!state.solveData || !state.solveData.search_stats) {
+    solveStatus.textContent = "No search stats available yet.";
+    return;
+  }
+
+  const s = state.solveData.search_stats;
+  const tested = Array.isArray(state.solveData.tested_dominoes_order)
+    ? state.solveData.tested_dominoes_order.length
+    : 0;
+
+  solveStatus.textContent =
+    `nodes=${s.nodes_visited}, checks=${s.candidate_checks}, tries=${s.placements_tried}, ` +
+    `dead_ends=${s.dead_ends}, backtracks=${s.backtracks}, max_depth=${s.max_depth}, tested=${tested}, elapsed=${s.elapsed.toFixed(3)}s`;
+}
+
+function normalizeSolveData(rawData) {
+  const data = rawData && typeof rawData === "object" ? { ...rawData } : {};
+
+  const solutionSteps = Array.isArray(data.solution_steps) ? data.solution_steps : [];
+  let testedOrder = Array.isArray(data.tested_dominoes_order) ? data.tested_dominoes_order : [];
+
+  // Backward compatibility: derive attempts from legacy compact step log if needed.
+  if (testedOrder.length === 0 && Array.isArray(data.steps)) {
+    testedOrder = data.steps
+      .filter((step) => step && step.action === "place" && Array.isArray(step.cells) && step.cells.length === 2)
+      .map((step, index) => {
+        const [a, b] = step.cells;
+        return {
+          depth: Number.isFinite(step.depth) ? step.depth : index,
+          cell: [a[0], a[1]],
+          neighbor: [b[0], b[1]],
+          domino: Array.isArray(step.domino) ? step.domino : [0, 0],
+          values: [a[2], b[2]],
+          accepted: true,
+        };
+      });
+  }
+
+  const rawStats = data.search_stats && typeof data.search_stats === "object"
+    ? data.search_stats
+    : {};
+
+  const acceptedCount = testedOrder.filter((attempt) => attempt && attempt.accepted === true).length;
+  const maxDepthFromSteps = solutionSteps.length > 0
+    ? Math.max(...solutionSteps.map((step, index) => (Number.isFinite(step.depth) ? step.depth : index)))
+    : 0;
+
+  data.solution_steps = solutionSteps;
+  data.tested_dominoes_order = testedOrder;
+  data.search_stats = {
+    nodes_visited: Number.isFinite(rawStats.nodes_visited) ? rawStats.nodes_visited : (Number.isFinite(rawStats.nodes) ? rawStats.nodes : 0),
+    candidate_checks: Number.isFinite(rawStats.candidate_checks) ? rawStats.candidate_checks : testedOrder.length,
+    placements_tried: Number.isFinite(rawStats.placements_tried) ? rawStats.placements_tried : acceptedCount,
+    dead_ends: Number.isFinite(rawStats.dead_ends) ? rawStats.dead_ends : 0,
+    backtracks: Number.isFinite(rawStats.backtracks) ? rawStats.backtracks : 0,
+    max_depth: Number.isFinite(rawStats.max_depth) ? rawStats.max_depth : maxDepthFromSteps,
+    elapsed: Number.isFinite(rawStats.elapsed) ? rawStats.elapsed : 0,
+    nodes: Number.isFinite(rawStats.nodes) ? rawStats.nodes : (Number.isFinite(rawStats.nodes_visited) ? rawStats.nodes_visited : 0),
+  };
+
+  return data;
+}
+
+function getApiUrl(path) {
+  if (window.location.protocol === "file:") {
+    throw new Error("API unavailable on file://. Start 'poetry run pips-server' and open http://127.0.0.1:8000/");
+  }
+  return new URL(path, window.location.origin).toString();
+}
+
+async function solveBoardInBackground() {
+  const board = exportBoardAsJson();
+  setPlayButtonsDisabled(true);
+  solveStatus.textContent = "Solving in background...";
+  state.solveData = null;
+  state.hintedSteps = 0;
+  stopProcessPlayback();
+  clearBoardLabels();
+  boardEl.classList.remove("solved");
+
+  try {
+    const response = await fetch(getApiUrl("/api/solve"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(board),
+    });
+
+    const data = normalizeSolveData(await response.json());
+    state.solveData = data;
+
+    if (data.status === "solved") {
+      solveStatus.textContent = "Solved in background. Use Hint, Solution, or Process.";
+      setPlayButtonsDisabled(false);
+    } else if (data.status === "no_solution") {
+      solveStatus.textContent = "No solution found for this puzzle.";
+      statsBtn.disabled = false;
+    } else {
+      solveStatus.textContent = `Solve error: ${data.error || "Unknown error"}`;
+      statsBtn.disabled = false;
+    }
+  } catch (error) {
+    solveStatus.textContent = `Network error: ${error.message}`;
+    statsBtn.disabled = true;
+  }
 }
 
 function renderAreasList() {
@@ -514,7 +743,7 @@ function downloadBoardJson() {
 
 async function saveBoardJsonToServer() {
   const board = exportBoardAsJson();
-  const response = await fetch("/api/save-board", {
+  const response = await fetch(getApiUrl("/api/save-board"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -543,6 +772,9 @@ readyBtn.addEventListener("click", async () => {
       solveStatus.textContent = `Save failed: ${error.message}`;
     }
     downloadBoardJson();
+    await solveBoardInBackground();
+  } else {
+    stopProcessPlayback();
   }
   updateBoardModeUi();
   refreshAllCells();
@@ -551,9 +783,12 @@ readyBtn.addEventListener("click", async () => {
 
 playBackBtn.addEventListener("click", () => {
   state.ready = false;
+  stopProcessPlayback();
   stopDrag();
   updateBoardModeUi();
   refreshAllCells();
+  clearBoardLabels();
+  boardEl.classList.remove("solved");
   buildDominoPalette();
 });
 
@@ -566,11 +801,18 @@ clearBtn.addEventListener("click", () => {
   state.areas = [];
   state.cellArea.clear();
   state.nextAreaId = 1;
+  state.solveData = null;
+  state.hintedSteps = 0;
+  stopProcessPlayback();
   stopDrag();
   refreshAllCells();
+  clearBoardLabels();
+  boardEl.classList.remove("solved");
   renderAreasList();
   updateBoardModeUi();
   buildDominoPalette();
+  setPlayButtonsDisabled(true);
+  solveStatus.textContent = "";
 });
 
 ruleButtons.forEach((button) => {
@@ -586,88 +828,92 @@ window.addEventListener("mouseup", () => {
 // Export functions for testing
 window.exportBoardAsJson = exportBoardAsJson;
 
-function displaySolution(solutionData) {
-  solution = solutionData;
-  boardEl.classList.add("solved");
-
-  if (!solutionData || !solutionData.solution) {
-    solveStatus.textContent = "No solution found.";
+hintBtn.addEventListener("click", () => {
+  const steps = getSolveSteps();
+  if (steps.length < 1) {
+    solveStatus.textContent = "No solved steps available.";
     return;
   }
 
-  // Parse solution and display domino labels
-  const dominoLabels = new Map();
-  const visited = new Set();
-  let dominoNum = 1;
+  stopProcessPlayback();
+  state.hintedSteps = clamp(state.hintedSteps + 1, 0, steps.length);
+  renderSolvedSteps(state.hintedSteps);
+  solveStatus.textContent = `Hint: revealed ${state.hintedSteps}/${steps.length} piece(s).`;
+});
 
-  for (const key in solutionData.solution) {
-    if (visited.has(key)) {
-      continue;
-    }
-    const [r, c] = key.split(",").map(Number);
-    const value = solutionData.solution[key];
-
-    // Find matching domino
-    for (const key2 in solutionData.solution) {
-      if (visited.has(key2) || key === key2) {
-        continue;
-      }
-      const value2 = solutionData.solution[key2];
-      if ((value === 0 && value2 === 0) ||
-          (Math.floor(value / 7) === Math.floor(value2 / 7) && value !== value2)) {
-        visited.add(key);
-        visited.add(key2);
-        dominoLabels.set(key, dominoNum);
-        dominoLabels.set(key2, dominoNum);
-        dominoNum++;
-        break;
-      }
-    }
+solutionBtn.addEventListener("click", () => {
+  const steps = getSolveSteps();
+  if (steps.length < 1) {
+    solveStatus.textContent = "No solved steps available.";
+    return;
   }
 
-  // Update cell display with domino numbers
-  cellEls.forEach((cell, key) => {
-    const label = dominoLabels.get(key);
-    if (label !== undefined) {
-      cell.textContent = String(label);
-    } else {
-      cell.textContent = "";
-    }
-  });
+  stopProcessPlayback();
+  state.hintedSteps = steps.length;
+  renderSolvedSteps(state.hintedSteps);
+  solveStatus.textContent = "Full solution shown.";
+});
 
-  solveStatus.textContent = "✓ Puzzle solved!";
-}
-
-solveBtn.addEventListener("click", async () => {
-  solveStatus.textContent = "Solving...";
-  solveBtn.disabled = true;
-
-  const board = exportBoardAsJson();
-
-  try {
-    const response = await fetch("/api/solve", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(board),
-    });
-
-    const data = await response.json();
-
-    if (data.status === "solved") {
-      displaySolution(data);
-    } else if (data.status === "no_solution") {
-      solveStatus.textContent = "✗ No solution found for this puzzle.";
-    } else {
-      solveStatus.textContent = `Error: ${data.error || "Unknown error"}`;
-    }
-  } catch (error) {
-    solveStatus.textContent = `Network error: ${error.message}`;
-  } finally {
-    solveBtn.disabled = false;
+processBtn.addEventListener("click", () => {
+  const attempts = getProcessAttempts();
+  const finalPlacements = getFinalPlacementSet();
+  if (attempts.length < 1 || finalPlacements.size < 1) {
+    solveStatus.textContent = "No process attempts available.";
+    return;
   }
+
+  stopProcessPlayback();
+  state.hintedSteps = 0;
+  const runId = state.processRunId;
+  const fixedValues = new Map();
+  renderFixedValueMap(fixedValues);
+  solveStatus.textContent = "Showing solution process (wrong attempts included)...";
+
+  const playAttemptAt = (index) => {
+    if (runId !== state.processRunId) {
+      return;
+    }
+
+    if (index >= attempts.length) {
+      renderFixedValueMap(fixedValues);
+      solveStatus.textContent = "Solution process complete.";
+      return;
+    }
+
+    const attempt = attempts[index];
+    const [v1, v2] = attempt.values;
+    const signature = placementSignature(attempt.cell, attempt.neighbor, v1, v2);
+    const isFinalPlacement = finalPlacements.has(signature);
+
+    renderFixedValueMap(fixedValues);
+    paintAttempt(attempt, !isFinalPlacement);
+
+    state.processTimer = window.setTimeout(() => {
+      if (runId !== state.processRunId) {
+        return;
+      }
+
+      if (isFinalPlacement) {
+        const [r1, c1] = attempt.cell;
+        const [r2, c2] = attempt.neighbor;
+        fixedValues.set(keyFor(r1, c1), v1);
+        fixedValues.set(keyFor(r2, c2), v2);
+      }
+
+      renderFixedValueMap(fixedValues);
+      state.processTimer = window.setTimeout(() => {
+        playAttemptAt(index + 1);
+      }, 45);
+    }, isFinalPlacement ? 140 : 90);
+  };
+
+  playAttemptAt(0);
+});
+
+statsBtn.addEventListener("click", () => {
+  showSearchStats();
 });
 
 buildBoardGrid();
 buildDominoPalette();
+setPlayButtonsDisabled(true);

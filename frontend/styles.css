@@ -198,13 +198,15 @@ button.ghost {
 .cell.area-anchor::after {
   content: attr(data-area-label);
   position: absolute;
-  left: 3px;
-  top: 3px;
-  font: 600 0.6rem/1 "IBM Plex Mono", monospace;
+  left: -4px;
+  top: -4px;
+  font: 600 0.52rem/1 "IBM Plex Mono", monospace;
   padding: 0.16rem 0.2rem;
   border-radius: 4px;
   background: var(--area-color, #2a9d8f);
   color: #fff;
+  z-index: 1;
+  opacity: 0.92;
 }
 
 .hint {
@@ -262,7 +264,6 @@ button.ghost {
 }
 
 .play-only {
-  display: none;
   margin-bottom: 0.75rem;
 }
 
@@ -273,20 +274,27 @@ button.ghost {
   display: none;
 }
 
-.app-shell.ready-mode .play-only {
-  display: inline-flex;
+.play-controls {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  align-items: center;
+}
+
+.play-controls.play-only {
+  display: none;
+}
+
+.app-shell.ready-mode .play-controls.play-only {
+  display: flex;
 }
 
 .board.ready .cell {
   pointer-events: none;
 }
 
-.play-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  align-items: center;
+#processBtn {
+  white-space: nowrap;
 }
 
 .play-controls #solveStatus {
@@ -305,6 +313,19 @@ button.ghost {
   font-weight: 700;
   font-size: 0.75rem;
   color: #1f1f1f;
+  z-index: 2;
+}
+
+.board.ready .cell.selected {
+  font-weight: 700;
+  color: #1f1f1f;
+}
+
+.cell.wrong-attempt {
+  background: #ffe1e1 !important;
+  border-color: #d62828 !important;
+  color: #7f1d1d !important;
+  box-shadow: 0 0 0 2px rgba(214, 40, 40, 0.15);
 }
 
 .cell.domino-same {

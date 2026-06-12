@@ -5,7 +5,7 @@ import sys
 import json
 import time
 from pathlib import Path
-from pips_solver.solver import PipsSolver
+from pips_solver.pips_solver import DominoSuperSolver
 
 
 def load_board(board_file: Path):
@@ -16,27 +16,41 @@ def load_board(board_file: Path):
 
 def solve_board(board: dict) -> dict:
     """Solve a board payload and return a serializable result object."""
-    solver = PipsSolver(board)
-    solution = solver.solve()
-    if solution:
+    solver = DominoSuperSolver(board)
+    solved = solver.solve()
+    if solved:
         return {
             "status": "solved",
-            "solution": {str(k): v for k, v in solution.items()},
+            "solution": solver.get_solution_dict(),
+            "solution_steps": solver.solution_steps,
+            "search_stats": solver.get_search_stats(),
+            "tested_dominoes_order": solver.get_tested_dominoes_order(),
         }
-    return {"status": "no_solution"}
+    return {
+        "status": "no_solution",
+        "search_stats": solver.get_search_stats(),
+        "tested_dominoes_order": solver.get_tested_dominoes_order(),
+    }
 
 
 def solve_board_details(board: dict):
     """Solve board and return serializable result plus raw solution details."""
-    solver = PipsSolver(board)
-    solution = solver.solve()
-    if solution:
+    solver = DominoSuperSolver(board)
+    solved = solver.solve()
+    if solved:
         result = {
             "status": "solved",
-            "solution": {str(k): v for k, v in solution.items()},
+            "solution": solver.get_solution_dict(),
+            "solution_steps": solver.solution_steps,
+            "search_stats": solver.get_search_stats(),
+            "tested_dominoes_order": solver.get_tested_dominoes_order(),
         }
-        return result, solution, solver.get_solution_grid()
-    return {"status": "no_solution"}, None, None
+        return result, solver.board, solver.solution_board
+    return {
+        "status": "no_solution",
+        "search_stats": solver.get_search_stats(),
+        "tested_dominoes_order": solver.get_tested_dominoes_order(),
+    }, None, None
 
 
 def print_solution_to_console(solution: dict, grid: list | None, selected: list[list[int]]) -> None:
@@ -54,7 +68,10 @@ def print_solution_to_console(solution: dict, grid: list | None, selected: list[
         min_col = min(cols)
         max_col = max(cols)
 
-    value_map = {(row, col): str(value) for (row, col), value in solution.items()}
+    value_map = {}
+    for key, value in solution.items():
+        row, col = eval(key)  # Parse tuple string like "(0, 1)"
+        value_map[(row, col)] = str(value)
 
     print("\nSolved Value Board:")
     for row in range(min_row, max_row + 1):
@@ -71,8 +88,8 @@ def print_solution_to_console(solution: dict, grid: list | None, selected: list[
     for row in range(min_row, max_row + 1):
         row_values = []
         for col in range(min_col, max_col + 1):
-            value = grid[row][col]
-            row_values.append("" if value == 0 else str(value))
+            value = grid[row][col] if row < len(grid) and col < len(grid[row]) else 0
+            row_values.append("" if value <= 0 else str(value))
         line = "  ".join(f"{value:>2}" for value in row_values)
         print(f"  {line}")
 
@@ -123,11 +140,25 @@ def main():
 
     if result["status"] == "solved":
         print("Solution found!")
-        print_solution_to_console(raw_solution, grid, board["selected"])
+        if raw_solution is None:
+            raise RuntimeError("Expected solved result to include raw solution data")
+        print_solution_to_console(result.get("solution", {}), grid, board["selected"])
+        stats = result.get("search_stats", {})
+        print(
+            "Search stats: "
+            f"nodes={stats.get('nodes', 0)}, "
+            f"backtracks={stats.get('backtracks', 0)}"
+        )
         print(f"Solve time: {elapsed:.3f}s")
         print(f"Solution saved to {output_file}")
     else:
         print("No solution found.")
+        stats = result.get("search_stats", {})
+        print(
+            "Search stats: "
+            f"nodes={stats.get('nodes', 0)}, "
+            f"backtracks={stats.get('backtracks', 0)}"
+        )
         print(f"Solve time: {elapsed:.3f}s")
         print(f"Result saved to {output_file}")
 
