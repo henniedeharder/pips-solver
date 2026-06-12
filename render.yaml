@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: pips-solver-api
+    env: python
+    plan: free
+    buildCommand: pip install .
+    startCommand: gunicorn pips_solver.server:app --bind 0.0.0.0:$PORT --workers 2 --threads 2
+    envVars:
+      - key: PIPS_CORS_ORIGINS
+        value: https://henniedeharder.github.io

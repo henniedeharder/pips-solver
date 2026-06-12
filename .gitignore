@@ -1,1 +1,9 @@
 saved_boards
+
+# Python bytecode/cache
+__pycache__/
+*.py[cod]
+
+# Local virtual environments
+.venv/
+venv/

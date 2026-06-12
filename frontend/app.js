@@ -363,7 +363,17 @@ function getApiUrl(path) {
   if (window.location.protocol === "file:") {
     throw new Error("API unavailable on file://. Start 'poetry run pips-server' and open http://127.0.0.1:8000/");
   }
-  return new URL(path, window.location.origin).toString();
+
+  const configuredBase = typeof window.PIPS_API_BASE_URL === "string"
+    ? window.PIPS_API_BASE_URL.trim()
+    : "";
+  const apiBase = configuredBase || window.location.origin;
+
+  if (!/^https?:\/\//i.test(apiBase)) {
+    throw new Error("Invalid API base URL. Set window.PIPS_API_BASE_URL to an http(s) URL.");
+  }
+
+  return new URL(path, apiBase.endsWith("/") ? apiBase : `${apiBase}/`).toString();
 }
 
 async function solveBoardInBackground() {

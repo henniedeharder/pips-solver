@@ -3,13 +3,35 @@ Web server for pips solver frontend.
 Serves the static frontend and provides a solve API endpoint.
 """
 
-from flask import Flask, jsonify, request, send_from_directory
-from pathlib import Path
 import json
+import os
 import time
+from pathlib import Path
+
+from flask import Flask, jsonify, request, send_from_directory
+from flask_cors import CORS
+
 from .pips_solver import DominoSuperSolver
 
 app = Flask(__name__, static_folder=None)
+
+
+def _parse_cors_origins() -> list[str] | str:
+    """Parse allowed CORS origins from env var.
+
+    PIPS_CORS_ORIGINS examples:
+    - "*"
+    - "https://user.github.io"
+    - "https://user.github.io,https://another-site.com"
+    """
+    raw = os.getenv("PIPS_CORS_ORIGINS", "*").strip()
+    if raw == "*":
+        return "*"
+    origins = [origin.strip() for origin in raw.split(",") if origin.strip()]
+    return origins or "*"
+
+
+CORS(app, resources={r"/api/*": {"origins": _parse_cors_origins()}})
 
 # Get the frontend directory path
 FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
@@ -98,8 +120,10 @@ def save_board():
         }), 500
 
 
-def run(host="127.0.0.1", port=8000, debug=False):
+def run(host=None, port=None, debug=False):
     """Run the Flask development server."""
+    host = host or os.getenv("HOST", "127.0.0.1")
+    port = int(port or os.getenv("PORT", "8000"))
     app.run(host=host, port=port, debug=debug)
 
 

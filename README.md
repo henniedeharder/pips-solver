@@ -32,6 +32,69 @@ When you press "Ready to play!", a `pips-board-*.json` file is automatically dow
 
 In play mode, you can press "Solve Puzzle" to solve the puzzle using the backend solver. The solution will be displayed on the board with domino numbers.
 
+## Publish Online (GitHub Pages + Render)
+
+This app has a static frontend and a Python API backend.
+
+- Frontend: publish `frontend/` on GitHub Pages
+- Backend: host API on Render
+
+### 1. Backend (Render)
+
+This repo includes `render.yaml` for one-click setup.
+
+1. Push your repo to GitHub.
+2. In Render, create a new Blueprint and select this repo.
+3. Render will read `render.yaml` and create `pips-solver-api`.
+4. After deploy, copy your backend URL, for example:
+    `https://pips-solver-api.onrender.com`
+
+Set CORS for your GitHub Pages domain by updating env var in Render:
+
+- `PIPS_CORS_ORIGINS=https://YOUR_USERNAME.github.io`
+
+If your repo is a project site (`https://YOUR_USERNAME.github.io/REPO_NAME`), the origin is still:
+
+- `https://YOUR_USERNAME.github.io`
+
+### 2. Frontend API URL
+
+Edit `frontend/config.js` and set:
+
+```js
+window.PIPS_API_BASE_URL = "https://pips-solver-api.onrender.com";
+```
+
+Commit this change before deploying Pages.
+
+### 3. Frontend (GitHub Pages)
+
+This repo includes a workflow:
+
+- `.github/workflows/deploy-pages.yml`
+
+To enable GitHub Pages:
+
+1. Go to GitHub repo Settings -> Pages.
+2. Under Source, choose **GitHub Actions**.
+3. Push to `main` (or run workflow manually).
+4. Open your Pages URL once deployment completes.
+
+### 4. Verify
+
+1. Open your GitHub Pages site.
+2. Build a puzzle and press "Ready to play!".
+3. Confirm solve works and no CORS/network errors appear in browser devtools.
+
+### Notes
+
+- Free Render instances may sleep; first request can take a short while.
+- For local development, leave `window.PIPS_API_BASE_URL = ""` in `frontend/config.js` and run:
+
+```bash
+poetry run pips-server
+```
+
 ## Solver
 
 A constraint-satisfaction solver that reads the JSON board configuration and finds a valid domino placement.
