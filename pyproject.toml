@@ -11,6 +11,7 @@ dependencies = [
   "flask>=3.0.0",
   "flask-cors>=4.0.0",
   "gunicorn>=22.0.0",
+  "ortools (>=9.15.6755,<10.0.0)",
 ]
 
 [project.scripts]
