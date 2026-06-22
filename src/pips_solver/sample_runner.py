@@ -9,35 +9,14 @@ import time
 import traceback
 from pathlib import Path
 
-from pips_solver.pips_solver import DominoSuperSolver
+from .problem import PipsProblem
+from .rendering import build_solution_dict, build_solution_grid, print_selected_values
+from .solver_ortools import CpSatSolver
 
 
-def print_result_value_board(solution: dict, selected: list[list[int]]) -> None:
-    """Print solved values as a row/column board."""
-    if selected:
-        min_row = min(cell[0] for cell in selected)
-        max_row = max(cell[0] for cell in selected)
-        min_col = min(cell[1] for cell in selected)
-        max_col = max(cell[1] for cell in selected)
-    else:
-        parsed = [eval(key) for key in solution]
-        min_row = min(row for row, _ in parsed)
-        max_row = max(row for row, _ in parsed)
-        min_col = min(col for _, col in parsed)
-        max_col = max(col for _, col in parsed)
-
-    value_grid = {}
-    for key, value in solution.items():
-        row, col = eval(key)
-        value_grid[(row, col)] = str(value)
-
-    print("Solved Value Board:")
-    for row in range(min_row, max_row + 1):
-        row_values = []
-        for col in range(min_col, max_col + 1):
-            row_values.append(value_grid.get((row, col), ""))
-        line = "  ".join(f"{cell:>2}" for cell in row_values)
-        print(f"  {line}")
+def print_result_value_board(problem: PipsProblem, values: list[int]) -> None:
+    """Print solved values in their board positions."""
+    print_selected_values(problem, values)
 
 
 def parse_args() -> argparse.Namespace:
@@ -95,29 +74,62 @@ def main() -> None:
             with open(board_file, 'r') as f:
                 board_data = json.load(f)
             
-            solver = DominoSuperSolver(board_data)
-            solved_flag = solver.solve()
+            problem = PipsProblem(board_data)
+            solver = CpSatSolver(problem)
+            solutions = solver.solve()
+            board_elapsed = time.perf_counter() - board_start
+
+            solved_flag = bool(solutions)
             board_elapsed = time.perf_counter() - board_start
             
             if solved_flag:
-                result = solver.save_solution(output_file)
+                values = solutions[0].vals
+                result = {
+                    "status": "solved",
+                    "solution": build_solution_dict(problem, values),
+                    "grid": build_solution_grid(problem, values),
+                    "solution_steps": [],
+                    "search_stats": {
+                        "nodes": 0,
+                        "backtracks": 0,
+                        "elapsed": board_elapsed,
+                        "nodes_visited": 0,
+                        "candidate_checks": 0,
+                        "placements_tried": 0,
+                        "dead_ends": 0,
+                        "max_depth": 0,
+                    },
+                    "tested_dominoes_order": [],
+                }
                 status = "solved"
                 solved += 1
                 
                 # Print the board nicely
-                solver.print_solution_board(board_data.get("selected"))
+                print_result_value_board(problem, values)
                 
-                if args.show_solution:
-                    print_result_value_board(result.get("solution", {}), board_data["selected"])
             else:
-                result = solver.save_solution(output_file)
+                result = {
+                    "status": "no_solution",
+                    "search_stats": {
+                        "nodes": 0,
+                        "backtracks": 0,
+                        "elapsed": board_elapsed,
+                        "nodes_visited": 0,
+                        "candidate_checks": 0,
+                        "placements_tried": 0,
+                        "dead_ends": 0,
+                        "max_depth": 0,
+                    },
+                    "tested_dominoes_order": [],
+                    "solution_steps": [],
+                }
                 status = "no_solution"
                 no_solution += 1
             
             print(f"Status: {status}")
             print(f"Result: {output_file}")
             print(f"Solve time: {board_elapsed:.3f}s")
-            print(f"Stats: {solver.stats}")
+            print(f"Stats: {result.get('search_stats', {})}")
             
         except Exception as exc:
             board_elapsed = time.perf_counter() - board_start

@@ -31,14 +31,14 @@ class _State:
     __slots__ = ("vals", "domains", "dom_available", "pos_assigned")
 
     def __init__(self, n_vars: int, n_dom: int, domains: dict[str, list[int]]):
-        self.vals          = [None] * n_vars        # assigned pip values
+        self.vals: list[int | None] = [None] * n_vars  # assigned pip values
         self.domains       = [set(d) for d in domains.values()]   # domain per var
         self.dom_available = set(range(n_dom))      # domino indices not yet placed
         self.pos_assigned  = {}                     # pos_idx -> domino_idx
 
     def clone(self) -> "_State":
         s = object.__new__(_State)
-        s.vals          = self.vals[:]
+        s.vals = self.vals[:]
         s.domains       = [d.copy() for d in self.domains]
         s.dom_available = self.dom_available.copy()
         s.pos_assigned  = self.pos_assigned.copy()
@@ -53,9 +53,10 @@ class SmartSolver:
     """
     Custom propagation + backtracking solver for PipsProblem.
 
-    The outer loop iterates over pre-computed valid_combos (position sets that
-    cover every variable exactly once).  Inside each combo we do constraint
-    propagation + MRV-guided backtracking.
+    Uses constraint propagation to naturally find valid position selections where:
+      - Each variable is covered exactly once
+      - Each domino is used exactly once
+      - Area constraints are satisfied
     """
 
     def __init__(self, problem: PipsProblem):
@@ -82,53 +83,78 @@ class SmartSolver:
         """
         results: list[dict] = []
         prob = self.prob
-
-        for combo in prob.valid_combos:
+        
+        n_pos = len(prob.positions)
+        n_dom = len(prob.dominoes)
+        
+        # Try all 2^n_pos subsets of positions, filter for valid coverage
+        for mask in range(1 << n_pos):
+            selected_positions = [p for p in range(n_pos) if (mask >> p) & 1]
+            
+            # Must select exactly n_dom positions (one per domino)
+            if len(selected_positions) != n_dom:
+                continue
+            
+            # Check if selected positions cover all variables exactly once
+            covered = [0] * prob.n
+            for p in selected_positions:
+                a, b = prob.positions[p]
+                covered[a] += 1
+                covered[b] += 1
+            
+            if covered != [1] * prob.n:
+                continue
+            
+            # Valid position coverage. Use propagation to speed up domino search.
             state = _State(
                 prob.n, len(prob.dominoes),
                 {v: prob.domains[v] for v in prob.variables}
             )
-            # Initial propagation (AC-3 + domino filter + unit prop)
-            unassigned = list(combo)
-            ok, unassigned = self._propagate(state, unassigned)
+            
+            ok, unassigned = self._propagate(state, selected_positions[:])
             if not ok:
                 continue
-
-            self._search(state, combo, unassigned, results, find_all)
+            
+            # Now search for domino assignments within this position combo
+            self._search_combo(state, selected_positions, unassigned, results, find_all)
             if not find_all and results:
                 return results
 
         return results
 
-    # ── Recursive search ──────────────────────────────────────────────────────
-
-    def _search(self, state: _State, combo: tuple,
-                unassigned: list[int], results: list, find_all: bool) -> None:
-
+    def _search_combo(self, state: _State, combo: list[int], 
+                      unassigned: list[int], results: list, find_all: bool) -> None:
+        """Search for valid domino assignments within a fixed position combo."""
+        prob = self.prob
+        
         if not unassigned:
-            # All positions in this combo are assigned — verify area constraints
-            if self.prob.check_constraints(state.vals):
-                placement = [
-                    (p, self.prob.dominoes[state.pos_assigned[p]],
-                     self.prob.positions[p])
-                    for p in combo
-                ]
-                results.append({"vals": state.vals[:], "placement": placement})
+            if all(v is not None for v in state.vals) and \
+               len(state.dom_available) == 0:
+                typed_vals = [value for value in state.vals if value is not None]
+                if prob.check_constraints(typed_vals):
+                    placement = [
+                        (p, prob.dominoes[state.pos_assigned[p]],
+                         prob.positions[p])
+                        for p in sorted(state.pos_assigned.keys())
+                    ]
+                    results.append({"vals": typed_vals, "placement": placement})
+                
             return
-
+        
         # MRV: pick the tightest unassigned position
         pos_idx = self._mrv(state, unassigned)
         remaining = [p for p in unassigned if p != pos_idx]
-        a, b = self.prob.positions[pos_idx]
-
+        a, b = prob.positions[pos_idx]
+        
+        # Try to assign this position with various dominoes
         for d_idx, lo, hi in self.pos_options[pos_idx]:
             if d_idx not in state.dom_available:
                 continue
             if lo not in state.domains[a] or hi not in state.domains[b]:
                 continue
-
+            
             saved = state.clone()
-
+            
             # Assign
             state.vals[a] = lo
             state.vals[b] = hi
@@ -136,13 +162,13 @@ class SmartSolver:
             state.domains[b] = {hi}
             state.dom_available.discard(d_idx)
             state.pos_assigned[pos_idx] = d_idx
-
+            
             ok, new_remaining = self._propagate(state, remaining)
             if ok:
-                self._search(state, combo, new_remaining, results, find_all)
+                self._search_combo(state, combo, new_remaining, results, find_all)
                 if not find_all and results:
                     return
-
+            
             # Restore
             state.vals          = saved.vals
             state.domains       = saved.domains

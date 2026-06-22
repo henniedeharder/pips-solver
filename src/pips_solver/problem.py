@@ -4,8 +4,6 @@ problem.py
 Parses a pips-board JSON and formulates the constraint problem instance.
 """
 
-from itertools import combinations
-
 
 class PipsProblem:
     """
@@ -14,8 +12,10 @@ class PipsProblem:
       - domains        : dict var -> list of allowed values
       - constraints    : list of constraint dicts
       - positions      : all valid domino placements (adjacent cell pairs)
-      - valid_combos   : position combos that cover every variable exactly once
       - dominoes       : the domino tiles to place
+
+    Solvers search for valid position selections that cover all variables
+    exactly once, using constraint propagation and backtracking.
     """
 
     def __init__(self, board: dict):
@@ -78,26 +78,14 @@ class PipsProblem:
             for a, b in positions
         ]
 
-        # ── Valid combos: sets of positions that cover all variables exactly once
+        # ── Verify domino count matches variables ──────────────────────────────────
         n_dom = len(self.dominoes)
         assert n_dom * 2 == self.n, (
             f"Expected {self.n // 2} dominoes to cover {self.n} variables, "
             f"got {n_dom}."
         )
-        self.valid_combos: list[tuple[int, ...]] = [
-            combo
-            for combo in combinations(range(len(self.positions)), n_dom)
-            if self._covers_all(combo)
-        ]
 
     # ── helpers ─────────────────────────────────────────────────────────────
-
-    def _covers_all(self, combo: tuple[int, ...]) -> bool:
-        covered = []
-        for p in combo:
-            a, b = self.positions[p]
-            covered.extend([a, b])
-        return sorted(covered) == list(range(self.n))
 
     def check_constraints(self, vals: list[int]) -> bool:
         """Return True if vals satisfies all area constraints."""
@@ -126,8 +114,5 @@ class PipsProblem:
         for i, (a, b) in enumerate(self.positions):
             va, vb = self.variables[a], self.variables[b]
             lines.append(f"  p{i + 1} = ({va}, {vb})")
-        lines.append(f"Valid position combos: {len(self.valid_combos)}")
-        for combo in self.valid_combos:
-            lines.append(f"  { ['p' + str(p + 1) for p in combo] }")
         lines.append(f"Dominoes  : {self.dominoes}")
         return "\n".join(lines)

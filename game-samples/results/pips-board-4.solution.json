@@ -175,7 +175,7 @@
   "search_stats": {
     "nodes": 81,
     "backtracks": 498,
-    "elapsed": 0.00124,
+    "elapsed": 0.001285,
     "nodes_visited": 81,
     "candidate_checks": 506,
     "placements_tried": 80,

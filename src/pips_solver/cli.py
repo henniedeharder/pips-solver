@@ -5,7 +5,10 @@ import sys
 import json
 import time
 from pathlib import Path
-from pips_solver.pips_solver import DominoSuperSolver
+
+from .problem import PipsProblem
+from .rendering import build_solution_dict, build_solution_grid, print_selected_values
+from .solver_ortools import CpSatSolver
 
 
 def load_board(board_file: Path):
@@ -16,82 +19,93 @@ def load_board(board_file: Path):
 
 def solve_board(board: dict) -> dict:
     """Solve a board payload and return a serializable result object."""
-    solver = DominoSuperSolver(board)
-    solved = solver.solve()
-    if solved:
+    problem = PipsProblem(board)
+    solver = CpSatSolver(problem)
+    start = time.perf_counter()
+    solutions = solver.solve()
+    elapsed = time.perf_counter() - start
+
+    if solutions:
+        values = solutions[0].vals
         return {
             "status": "solved",
-            "solution": solver.get_solution_dict(),
-            "solution_steps": solver.solution_steps,
-            "search_stats": solver.get_search_stats(),
-            "tested_dominoes_order": solver.get_tested_dominoes_order(),
+            "solution": build_solution_dict(problem, values),
+            "grid": build_solution_grid(problem, values),
+            "solution_steps": [],
+            "search_stats": {
+                "nodes": 0,
+                "backtracks": 0,
+                "elapsed": elapsed,
+                "nodes_visited": 0,
+                "candidate_checks": 0,
+                "placements_tried": 0,
+                "dead_ends": 0,
+                "max_depth": 0,
+            },
+            "tested_dominoes_order": [],
         }
     return {
         "status": "no_solution",
-        "search_stats": solver.get_search_stats(),
-        "tested_dominoes_order": solver.get_tested_dominoes_order(),
+        "search_stats": {
+            "nodes": 0,
+            "backtracks": 0,
+            "elapsed": elapsed,
+            "nodes_visited": 0,
+            "candidate_checks": 0,
+            "placements_tried": 0,
+            "dead_ends": 0,
+            "max_depth": 0,
+        },
+        "tested_dominoes_order": [],
+        "solution_steps": [],
     }
 
 
 def solve_board_details(board: dict):
     """Solve board and return serializable result plus raw solution details."""
-    solver = DominoSuperSolver(board)
-    solved = solver.solve()
-    if solved:
+    problem = PipsProblem(board)
+    solver = CpSatSolver(problem)
+    start = time.perf_counter()
+    solutions = solver.solve()
+    elapsed = time.perf_counter() - start
+
+    if solutions:
+        values = solutions[0].vals
         result = {
             "status": "solved",
-            "solution": solver.get_solution_dict(),
-            "solution_steps": solver.solution_steps,
-            "search_stats": solver.get_search_stats(),
-            "tested_dominoes_order": solver.get_tested_dominoes_order(),
+            "solution": build_solution_dict(problem, values),
+            "grid": build_solution_grid(problem, values),
+            "solution_steps": [],
+            "search_stats": {
+                "nodes": 0,
+                "backtracks": 0,
+                "elapsed": elapsed,
+                "nodes_visited": 0,
+                "candidate_checks": 0,
+                "placements_tried": 0,
+                "dead_ends": 0,
+                "max_depth": 0,
+            },
+            "tested_dominoes_order": [],
         }
-        return result, solver.board, solver.solution_board
-    return {
+        return result, problem, values
+
+    result = {
         "status": "no_solution",
-        "search_stats": solver.get_search_stats(),
-        "tested_dominoes_order": solver.get_tested_dominoes_order(),
-    }, None, None
-
-
-def print_solution_to_console(solution: dict, grid: list | None, selected: list[list[int]]) -> None:
-    """Print a readable solution preview in the terminal."""
-    if selected:
-        min_row = min(cell[0] for cell in selected)
-        max_row = max(cell[0] for cell in selected)
-        min_col = min(cell[1] for cell in selected)
-        max_col = max(cell[1] for cell in selected)
-    else:
-        rows = [row for (row, _) in solution]
-        cols = [col for (_, col) in solution]
-        min_row = min(rows)
-        max_row = max(rows)
-        min_col = min(cols)
-        max_col = max(cols)
-
-    value_map = {}
-    for key, value in solution.items():
-        row, col = eval(key)  # Parse tuple string like "(0, 1)"
-        value_map[(row, col)] = str(value)
-
-    print("\nSolved Value Board:")
-    for row in range(min_row, max_row + 1):
-        row_values = []
-        for col in range(min_col, max_col + 1):
-            row_values.append(value_map.get((row, col), ""))
-        line = "  ".join(f"{value:>2}" for value in row_values)
-        print(f"  {line}")
-
-    if grid is None:
-        return
-
-    print("\nDomino Layout Grid:")
-    for row in range(min_row, max_row + 1):
-        row_values = []
-        for col in range(min_col, max_col + 1):
-            value = grid[row][col] if row < len(grid) and col < len(grid[row]) else 0
-            row_values.append("" if value <= 0 else str(value))
-        line = "  ".join(f"{value:>2}" for value in row_values)
-        print(f"  {line}")
+        "search_stats": {
+            "nodes": 0,
+            "backtracks": 0,
+            "elapsed": elapsed,
+            "nodes_visited": 0,
+            "candidate_checks": 0,
+            "placements_tried": 0,
+            "dead_ends": 0,
+            "max_depth": 0,
+        },
+        "tested_dominoes_order": [],
+        "solution_steps": [],
+    }
+    return result, problem, None
 
 
 def solve_board_file(board_file: Path, output_file: Path) -> dict:
@@ -132,7 +146,7 @@ def main():
 
     print("\nSolving puzzle...")
     start = time.perf_counter()
-    result, raw_solution, grid = solve_board_details(board)
+    result, problem, values = solve_board_details(board)
     elapsed = time.perf_counter() - start
 
     with output_file.open("w", encoding="utf-8") as f:
@@ -140,9 +154,9 @@ def main():
 
     if result["status"] == "solved":
         print("Solution found!")
-        if raw_solution is None:
-            raise RuntimeError("Expected solved result to include raw solution data")
-        print_solution_to_console(result.get("solution", {}), grid, board["selected"])
+        if values is None:
+            raise RuntimeError("Expected solved result to include solution values")
+        print_selected_values(problem, values)
         stats = result.get("search_stats", {})
         print(
             "Search stats: "

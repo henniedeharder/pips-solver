@@ -2,6 +2,9 @@
 solver_backtrack.py
 -------------------
 Pure-Python backtracking solver — no external dependencies required.
+
+Uses constraint propagation: selects positions ensuring each variable
+is covered exactly once and each domino is used exactly once.
 """
 
 from itertools import permutations
@@ -28,11 +31,15 @@ class Solution:
 
 class BacktrackSolver:
     """
-    Enumerate all solutions by:
-      1. Iterating over valid position combos (guaranteed full coverage).
-      2. Trying all permutations of domino → position assignments.
-      3. Trying both orientations for each domino.
-      4. Checking consistency eagerly and validating area constraints.
+    Enumerate all solutions by backtracking through:
+      1. Position selections (which positions are used)
+      2. Domino assignments (which domino for each position)
+      3. Orientations (forward or reverse for each domino)
+
+    Constraints:
+      - Each variable covered exactly once
+      - Each domino used exactly once
+      - Area constraints satisfied
     """
 
     def __init__(self, problem: PipsProblem):
@@ -41,40 +48,57 @@ class BacktrackSolver:
     def solve(self, find_all: bool = False) -> list[Solution]:
         prob = self.prob
         results: list[Solution] = []
-
-        for combo in prob.valid_combos:
-            pos_pairs = [prob.positions[p] for p in combo]
-            n_dom = len(prob.dominoes)
-
+        
+        n_pos = len(prob.positions)
+        n_dom = len(prob.dominoes)
+        
+        # Try all 2^n_pos subsets of positions, filter for valid coverage
+        for mask in range(1 << n_pos):
+            selected_positions = [p for p in range(n_pos) if (mask >> p) & 1]
+            
+            # Must select exactly n_dom positions (one per domino)
+            if len(selected_positions) != n_dom:
+                continue
+            
+            # Check if selected positions cover all variables exactly once
+            covered = [0] * prob.n
+            for p in selected_positions:
+                a, b = prob.positions[p]
+                covered[a] += 1
+                covered[b] += 1
+            
+            if covered != [1] * prob.n:
+                continue
+            
+            # Valid position coverage. Now try domino assignments + orientations.
             for dom_perm in permutations(range(n_dom)):
-                # 2^n_dom orientation combinations
+                # Try all 2^n_dom orientation combinations
                 for orient_bits in range(1 << n_dom):
                     vals = [None] * prob.n
                     ok = True
-
-                    for i, (a, b) in enumerate(pos_pairs):
+                    
+                    for i, p in enumerate(selected_positions):
+                        a, b = prob.positions[p]
                         lo, hi = prob.dominoes[dom_perm[i]]
+                        
                         if (orient_bits >> i) & 1:
                             lo, hi = hi, lo
-
+                        
                         # Domain check
                         if lo not in prob.domains[prob.variables[a]]:
-                            ok = False; break
+                            ok = False
+                            break
                         if hi not in prob.domains[prob.variables[b]]:
-                            ok = False; break
-
-                        # Consistency check
-                        if vals[a] is not None and vals[a] != lo:
-                            ok = False; break
-                        if vals[b] is not None and vals[b] != hi:
-                            ok = False; break
-
+                            ok = False
+                            break
+                        
                         vals[a] = lo
                         vals[b] = hi
-
+                    
                     if ok and prob.check_constraints(vals):
                         placement = [
-                            (combo[i], prob.dominoes[dom_perm[i]], pos_pairs[i])
+                            (selected_positions[i], prob.dominoes[dom_perm[i]], 
+                             prob.positions[selected_positions[i]])
                             for i in range(n_dom)
                         ]
                         results.append(Solution(vals, placement))

@@ -11,7 +11,9 @@ from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
-from .pips_solver import DominoSuperSolver
+from .problem import PipsProblem
+from .rendering import build_solution_dict, build_solution_grid
+from .solver_ortools import CpSatSolver
 
 app = Flask(__name__, static_folder=None)
 
@@ -61,25 +63,47 @@ def solve():
         if not board:
             return jsonify({"error": "No board provided"}), 400
 
-        solver = DominoSuperSolver(board)
-        solved = solver.solve()
+        problem = PipsProblem(board)
+        solver = CpSatSolver(problem)
+        start = time.perf_counter()
+        solutions = solver.solve()
+        elapsed = time.perf_counter() - start
 
-        if solved:
-            # Convert solution to serializable format
-            solution_data = solver.get_solution_dict()
+        if solutions:
+            values = solutions[0].vals
+            solution_data = build_solution_dict(problem, values)
             return jsonify({
                 "status": "solved",
                 "solution": solution_data,
-                "grid": solver.solution_board,
-                "solution_steps": solver.solution_steps,
-                "search_stats": solver.get_search_stats(),
-                "tested_dominoes_order": solver.get_tested_dominoes_order(),
+                "grid": build_solution_grid(problem, values),
+                "solution_steps": [],
+                "search_stats": {
+                    "nodes": 0,
+                    "backtracks": 0,
+                    "elapsed": elapsed,
+                    "nodes_visited": 0,
+                    "candidate_checks": 0,
+                    "placements_tried": 0,
+                    "dead_ends": 0,
+                    "max_depth": 0,
+                },
+                "tested_dominoes_order": [],
             })
         else:
             return jsonify({
                 "status": "no_solution",
-                "search_stats": solver.get_search_stats(),
-                "tested_dominoes_order": solver.get_tested_dominoes_order(),
+                "search_stats": {
+                    "nodes": 0,
+                    "backtracks": 0,
+                    "elapsed": elapsed,
+                    "nodes_visited": 0,
+                    "candidate_checks": 0,
+                    "placements_tried": 0,
+                    "dead_ends": 0,
+                    "max_depth": 0,
+                },
+                "tested_dominoes_order": [],
+                "solution_steps": [],
             })
     except Exception as e:
         return jsonify({

@@ -1,0 +1,1824 @@
+{
+  "status": "solved",
+  "solution": {
+    "(0, 1)": 1,
+    "(1, 2)": 2,
+    "(3, 1)": 6,
+    "(1, 1)": 2,
+    "(2, 0)": 5,
+    "(3, 0)": 4,
+    "(0, 2)": 6,
+    "(2, 2)": 2,
+    "(1, 0)": 0,
+    "(3, 2)": 3
+  },
+  "solution_steps": [
+    {
+      "depth": 0,
+      "cell": [
+        0,
+        1
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        1,
+        2
+      ]
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ]
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        0,
+        5
+      ]
+    },
+    {
+      "depth": 3,
+      "cell": [
+        2,
+        2
+      ],
+      "neighbor": [
+        3,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ]
+    },
+    {
+      "depth": 4,
+      "cell": [
+        3,
+        0
+      ],
+      "neighbor": [
+        3,
+        1
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ]
+    }
+  ],
+  "search_stats": {
+    "nodes": 15,
+    "backtracks": 80,
+    "elapsed": 0.000196,
+    "nodes_visited": 15,
+    "candidate_checks": 85,
+    "placements_tried": 14,
+    "dead_ends": 0,
+    "max_depth": 5
+  },
+  "tested_dominoes_order": [
+    {
+      "depth": 0,
+      "cell": [
+        0,
+        1
+      ],
+      "neighbor": [
+        0,
+        2
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        0,
+        5
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        1,
+        2
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        1,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        2,
+        1
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        2,
+        1
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 0,
+      "cell": [
+        0,
+        1
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        0,
+        5
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        1,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        2,
+        1
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 0,
+      "cell": [
+        0,
+        1
+      ],
+      "neighbor": [
+        0,
+        2
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        5,
+        0
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 0,
+      "cell": [
+        0,
+        1
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        5,
+        0
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 0,
+      "cell": [
+        0,
+        1
+      ],
+      "neighbor": [
+        0,
+        2
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        1,
+        2
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        0,
+        5
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        2
+      ],
+      "neighbor": [
+        2,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        0,
+        5
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        1
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        1
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        1
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        1
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        1
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        1
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        5,
+        0
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        5,
+        0
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 0,
+      "cell": [
+        0,
+        1
+      ],
+      "neighbor": [
+        1,
+        1
+      ],
+      "domino": [
+        1,
+        2
+      ],
+      "values": [
+        1,
+        2
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        0,
+        5
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        5,
+        0
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        3,
+        2
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        0,
+        5
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 3,
+      "cell": [
+        2,
+        2
+      ],
+      "neighbor": [
+        3,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 4,
+      "cell": [
+        3,
+        0
+      ],
+      "neighbor": [
+        3,
+        1
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 4,
+      "cell": [
+        3,
+        0
+      ],
+      "neighbor": [
+        3,
+        1
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 3,
+      "cell": [
+        2,
+        2
+      ],
+      "neighbor": [
+        3,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 3,
+      "cell": [
+        2,
+        2
+      ],
+      "neighbor": [
+        3,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 3,
+      "cell": [
+        2,
+        2
+      ],
+      "neighbor": [
+        3,
+        2
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        5,
+        0
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        6,
+        4
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        2,
+        6
+      ],
+      "accepted": false
+    },
+    {
+      "depth": 1,
+      "cell": [
+        0,
+        2
+      ],
+      "neighbor": [
+        1,
+        2
+      ],
+      "domino": [
+        2,
+        6
+      ],
+      "values": [
+        6,
+        2
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 2,
+      "cell": [
+        1,
+        0
+      ],
+      "neighbor": [
+        2,
+        0
+      ],
+      "domino": [
+        0,
+        5
+      ],
+      "values": [
+        0,
+        5
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 3,
+      "cell": [
+        2,
+        2
+      ],
+      "neighbor": [
+        3,
+        2
+      ],
+      "domino": [
+        2,
+        3
+      ],
+      "values": [
+        2,
+        3
+      ],
+      "accepted": true
+    },
+    {
+      "depth": 4,
+      "cell": [
+        3,
+        0
+      ],
+      "neighbor": [
+        3,
+        1
+      ],
+      "domino": [
+        4,
+        6
+      ],
+      "values": [
+        4,
+        6
+      ],
+      "accepted": true
+    }
+  ]
+}
